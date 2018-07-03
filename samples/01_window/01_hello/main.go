@@ -11,5 +11,5 @@ import (
 func appMain(driver gxui.Driver) {
 }
 func main() {
-	gl.StartDriver(appMain)
+	gxui.StartDriver(appMain)
 }
