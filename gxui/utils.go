@@ -8,7 +8,6 @@ import (
 	"bytes"
 	"fmt"
 	"unicode/utf8"
-
 	"github.com/wrzfeijianshen/gui/gxui/math"
 )
 

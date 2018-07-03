@@ -11,6 +11,7 @@ import (
 )
 
 type Driver interface {
+	StartDriver(appRoutine func(driver Driver))
 	// Call queues f to be run on the UI go-routine, returning before f may have
 	// been called. Call returns false if the driver has been terminated, in which
 	// case f may not be called.

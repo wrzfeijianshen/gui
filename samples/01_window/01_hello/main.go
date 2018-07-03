@@ -6,7 +6,6 @@ package main
 
 import (
 	"github.com/wrzfeijianshen/gui/gxui"
-	"github.com/wrzfeijianshen/gui/drivers/gl"
 )
 
 func appMain(driver gxui.Driver) {
