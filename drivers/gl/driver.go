@@ -11,6 +11,7 @@ import (
 	"github.com/goxjs/gl"
 	"github.com/goxjs/glfw"
 	"github.com/wrzfeijianshen/gui/gxui"
+	"github.com/wrzfeijianshen/gui/gxui/math"
 )
 
 // 应用程序在终止时处理事件的最大时间。
