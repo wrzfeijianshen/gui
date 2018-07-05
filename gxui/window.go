@@ -26,12 +26,15 @@ type Window interface {
 	// A scale of 1 is unscaled, 2 is twice the regular scaling.
 	SetScale(float32)
 
+	Size() math.Size
+
+	SetSize(math.Size)
 	// Position returns position of the window.
 	Position() math.Point
 
 	// SetPosition changes position of the window.
 	SetPosition(math.Point)
-
+	//SetSize(size math.Size)
 	// Fullscreen returns true if the window is currently full-screen.
 	Fullscreen() bool
 

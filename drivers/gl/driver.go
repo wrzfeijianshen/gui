@@ -54,10 +54,6 @@ func StartDriver(appRoutine func(driver gxui.Driver)) {
 	go driver.applicationLoop()
 	driver.driverLoop()
 }
-// wrz 20180703 add
-func (d *driver) StartDriver(appRoutine func(driver gxui.Driver)) {
-	StartDriver(appRoutine)
-}
 func (d *driver) asyncDriver(f func()) {
 	d.pendingDriver <- f
 	d.wake()

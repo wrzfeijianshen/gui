@@ -5,11 +5,21 @@
 package main
 
 import (
-	"github.com/wrzfeijianshen/gui/gxui"
-)
+	"github.com/wrzfeijianshen/gui/gxui/mixins"
 
+	"github.com/wrzfeijianshen/gui/gxui"
+	"github.com/wrzfeijianshen/gui/drivers/gl"
+	"github.com/wrzfeijianshen/gui/gxui/math"
+)
+type Window struct {
+	mixins.Window
+}
 func appMain(driver gxui.Driver) {
+	w := &Window{}
+	//
+	w.Window.Init(w, driver, 100, 200, "hello")
+	w.SetSize(math.Size{200,200})
 }
 func main() {
-	gxui.StartDriver(appMain)
+	gl.StartDriver(appMain)
 }

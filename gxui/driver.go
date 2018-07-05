@@ -6,26 +6,18 @@ package gxui
 
 import (
 	"image"
-
 	"github.com/wrzfeijianshen/gui/gxui/math"
 )
-func StartDriver(appRoutine func(driver Driver)){
-	var driver Driver
-	driver.StartDriver(appRoutine)
-}
-
 type Driver interface {
 	// Call queues f to be run on the UI go-routine, returning before f may have
 	// been called. Call returns false if the driver has been terminated, in which
 	// case f may not be called.
-	StartDriver(appRoutine func(driver Driver))
 	Call(f func()) bool
 
 	// CallSync queues and then blocks for f to be run on the UI go-routine.
 	// Call returns false if the driver has been terminated, in which case f may
 	// not be called.
 	CallSync(f func()) bool
-
 	Terminate()
 	SetClipboard(str string)
 	GetClipboard() (string, error)
