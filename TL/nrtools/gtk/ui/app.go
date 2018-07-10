@@ -7,6 +7,9 @@ import (
 
 	"github.com/mattn/go-gtk/glib"
 	"github.com/mattn/go-gtk/gtk"
+	"github.com/wrzfeijianshen/nrtools/gtk/serial"
+	"unsafe"
+	"github.com/wrzfeijianshen/nrtools/gtk/com"
 )
 
 var tabName chan string
@@ -85,7 +88,7 @@ func CreateWindow() *gtk.Window {
 	return window
 }
 
-func CreateBtn(notebook *gtk.Notebook, layout *gtk.Fixed, str string, width int, btnfun interface{}, args ...interface{}) {
+func CreateBtn(notebook *gtk.Notebook, layout *gtk.Fixed, str string, width int,height int, btnfun interface{}, args ...interface{}) ( *gtk.Button){
 	prev := gtk.NewButtonWithLabel(str)
 	prev.SetSizeRequest(80, 30)
 	prev.Clicked(func() {
@@ -99,7 +102,8 @@ func CreateBtn(notebook *gtk.Notebook, layout *gtk.Fixed, str string, width int,
 	})
 	layout.Add(prev)
 	layout.Put(prev, 5, 0)
-	layout.Move(prev, width, 35)
+	layout.Move(prev, width, height)
+	return prev
 }
 
 func CreateLabel(notebook *gtk.Notebook, layout *gtk.Fixed, str string, width int, height int) {
@@ -111,8 +115,8 @@ func CreateLabel(notebook *gtk.Notebook, layout *gtk.Fixed, str string, width in
 	layout.Move(label, width, height)
 }
 
-func CreateEditList(notebook *gtk.Notebook, layout *gtk.Fixed, str string, width int, height int) *gtk.ComboBoxEntry {
-	box := gtk.NewComboBoxEntryNewText()
+func CreateEditList(notebook *gtk.Notebook, layout *gtk.Fixed, str string, width int, height int) *gtk.ComboBoxText {
+	box := gtk.NewComboBoxTextWithEntry()
 	box.SetSizeRequest(80, 20)
 	// prev.SetSizeRequest(80, 30)
 	// box.ModifyFontSize(10)
@@ -138,24 +142,86 @@ func CreateNotpage(notebook *gtk.Notebook, layout *gtk.Fixed, str string) {
 	CreateLabel(notebook, lay, "校验位:", 0, 50)
 	CreateLabel(notebook, lay, "数据位:", 0, 75)
 	CreateLabel(notebook, lay, "停止位:", 0, 100)
-	boxCK := CreateEditList(notebook, lay, "", 50, 0)
+	boxName := CreateEditList(notebook, lay, "", 50, 0)
 	for i := 1; i < 15; i++ {
-		boxCK.InsertText(strconv.Itoa(i), i)
+		boxName.InsertText( i,"COM"+strconv.Itoa(i))
 	}
-	boxCK.SetActive(0)
+	boxName.SetActive(0)
 
-	boxCK = CreateEditList(notebook, lay, "", 50, 25)
-	boxCK.InsertText(strconv.Itoa(4800), 0)
-	boxCK.InsertText(strconv.Itoa(9600), 1)
-	boxCK.InsertText(strconv.Itoa(14400), 2)
-	boxCK.InsertText(strconv.Itoa(38400), 3)
-	boxCK.InsertText(strconv.Itoa(56000), 4)
-	boxCK.InsertText(strconv.Itoa(57600), 5)
+	// 波特率
+	boxBaud := CreateEditList(notebook, lay, "", 50, 25)
+	boxBaud.InsertText(0,"4800")
+	boxBaud.InsertText(0,"4800")
+	boxBaud.InsertText(1,"9600")
+	boxBaud.InsertText( 2,"14400")
+	boxBaud.InsertText(3,"38400")
+	boxBaud.InsertText(4,"56000")
+	boxBaud.InsertText(5,"57600")
+	boxBaud.SetActive(0)
 
-	boxCK.SetActive(0)
+	// 校验位
+	boxParity := CreateEditList(notebook, lay, "", 50, 50)
+	boxParity.InsertText( 0,"NONE")
+	boxParity.InsertText( 1,"ODD")
+	boxParity.InsertText( 2,"EVEN")
+	boxParity.InsertText(3,"MARK")
+	boxParity.InsertText(4,"SPACE")
+	boxParity.SetActive(0)
+	// 数据位
+	boxSize := CreateEditList(notebook, lay, "", 50, 75)
+	boxSize.InsertText(0,"5")
+	boxSize.InsertText(1,"6")
+	boxSize.InsertText(2,"7")
+	boxSize.InsertText(3,"8")
+	boxSize.SetActive(3)
 
+	// 停止位
+	boxStopBits := CreateEditList(notebook, lay, "", 50, 100)
+	boxStopBits.InsertText(0,"1")
+	boxStopBits.InsertText(1,"1.5")
+	boxStopBits.InsertText(2,"2")
+	boxStopBits.SetActive(0)
+
+	port  := &serial.Port{}
+
+	btnfunc := func() {
+		// 1.串口信息配置
+		var c serial.Config
+		c.Name = boxName.GetActiveText()
+		c.Baud, _ = strconv.Atoi(boxBaud.GetActiveText())
+		c.Size = com.StringTouint8(boxSize.GetActiveText())
+		c.Parity = serial.ByteToParity(boxParity.GetActiveText()[0])
+		c.StopBits = serial.StringStop(boxStopBits.GetActiveText())
+		fmt.Println(c.Name, c.Baud, string(c.Parity), c.StopBits, string(c.Size))
+		var err error
+		port,err = serial.OpenPort(&c)
+		if err != nil {
+			fmt.Println("打开串口失败：", err)
+			return
+		}
+		//port.Read("aa")
+		fmt.Println("串口成功开启：")
+	}
+
+	btncolosfunc := func() {
+		// 1.串口信息配置
+		err := port.Close()
+		if err != nil {
+			fmt.Println("串口关闭失败：",err)
+		}
+		com.StrtoByte("aa")
+	}
+	// 按钮
+	 CreateBtn(notebook, lay, "打开串口", 0,125, btnfunc)
+	//btn.SetTooltipText("关闭串口")
+	CreateBtn(notebook, lay, "关闭串口", 0,160, btncolosfunc)
 	page.Add(vbtn)
 	notebook.ShowAll()
+}
+func BytesToString(b []byte) string {
+	bh := (*reflect.SliceHeader)(unsafe.Pointer(&b))
+	sh := reflect.StringHeader{bh.Data, bh.Len}
+	return *(*string)(unsafe.Pointer(&sh))
 }
 
 func CreateNotbook(w *gtk.Window, layout *gtk.Fixed) {
@@ -164,8 +230,8 @@ func CreateNotbook(w *gtk.Window, layout *gtk.Fixed) {
 	notebook.SetSizeRequest(600, 600)
 	CreateNotpage(notebook, layout, "串口")
 
-	CreateBtn(notebook, layout, "上一个", 0, notebook.PrevPage)
-	CreateBtn(notebook, layout, "下一个", 90, notebook.NextPage)
+	CreateBtn(notebook, layout, "上一个", 0,35, notebook.PrevPage)
+	CreateBtn(notebook, layout, "下一个", 90,35, notebook.NextPage)
 
 	prev := gtk.NewButtonWithLabel("创建示例")
 	prev.SetSizeRequest(80, 30)
