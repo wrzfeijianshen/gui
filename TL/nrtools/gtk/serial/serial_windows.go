@@ -18,6 +18,7 @@ type Port struct {
 	wl sync.Mutex
 	ro *syscall.Overlapped
 	wo *syscall.Overlapped
+	openflag bool // true 代表打开
 }
 
 type structDCB struct {
@@ -41,7 +42,6 @@ func openPort(name string, baud int, databits byte, parity Parity, stopbits Stop
 	if len(name) > 0 && name[0] != '\\' {
 		name = "\\\\.\\" + name
 	}
-
 	h, err := syscall.CreateFile(syscall.StringToUTF16Ptr(name),
 		syscall.GENERIC_READ|syscall.GENERIC_WRITE,
 		0,
@@ -85,7 +85,7 @@ func openPort(name string, baud int, databits byte, parity Parity, stopbits Stop
 	port.fd = h
 	port.ro = ro
 	port.wo = wo
-
+	port.openflag = true
 	return port, nil
 }
 
@@ -131,6 +131,9 @@ func (p *Port) Read(buf []byte) (int, error) {
 // or data received but not read
 func (p *Port) Flush() error {
 	return purgeComm(p.fd)
+}
+func (p *Port) Openflag() bool {
+	return p.openflag
 }
 
 var (
